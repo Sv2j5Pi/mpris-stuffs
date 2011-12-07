@@ -1,4 +1,10 @@
+'''mpris_info
+code stolen from: https://github.com/duckinator/xchat-mpris/blob/master/xchat-mpris.py
+thanks ^_^
+'''
 import dbus
+
+__credit__ = 'https://github.com/duckinator'
 
 bus = dbus.SessionBus()
 bus_name = 'org.mpris.MediaPlayer2.'
@@ -16,15 +22,15 @@ def performAction(action, player):
 
     
 # Pass in milliseconds, get (minutes, seconds)
-def parseSongPosition(time):
-    return getMinutesAndSeconds(time / 1000)
+def _parseSongPosition(time):
+    return _getMinutesAndSeconds(time / 1000)
 
 # Pass in just seconds, get (minutes, seconds)
-def getMinutesAndSeconds(seconds):
+def _getMinutesAndSeconds(seconds):
     return (seconds / 60, seconds % 60)
 
 # Pass in both minutes and seconds
-def formatTime(time):
+def _formatTime(time):
     if time > 0:
         return "%d:%02d" % time
     else:
@@ -35,19 +41,16 @@ def getSongInfo(player):
         remote_object = bus.get_object(bus_name + player, "/Player")
         iface = dbus.Interface(remote_object, "org.freedesktop.MediaPlayer")
         
-        #if iface.IsPlaying():
         data = iface.GetMetadata()
-        title = data["title"].encode('utf-8')
-        album = data["album"].encode('utf-8')
-        artist = data["artist"].encode('utf-8')
-        pos = formatTime(parseSongPosition(iface.PositionGet()))
-        length = formatTime(getMinutesAndSeconds(data["time"]))
+        title = data["title"].strip().encode('utf-8')
+        album = data["album"].strip().encode('utf-8')
+        artist = data["artist"].strip().encode('utf-8')
+        pos = _formatTime(_parseSongPosition(iface.PositionGet()))
+        length = _formatTime(_getMinutesAndSeconds(data["time"]))
         
-        return (artist, title, album, pos, length)
-        #else:
-        #  return 0
+        return 'Now playing {} by {} from the album {} [{}/{}]'.format(title, artist, album, pos, length)
     except dbus.exceptions.DBusException:
-        return False
+        return None
 
 def getPlayerVersion(player):
     try:
