@@ -1,0 +1,29 @@
+#!/usr/bin/env python2 
+'''
+konversation just for 'now playing' for now
+put this script and mpris_info.py to:
+~/.kde4/share/apps/konversation/scripts/
+cd ~/.kde4/share/apps/konversation/scripts/
+chmod +x np
+type /np in konversation to run it.
+'''
+
+import mpris_info, sys, dbus
+
+bus = dbus.SessionBus()
+player = 'deadbeef' ## change this to your music player name
+
+remote_object = bus.get_object('org.kde.konversation',
+                               '/irc')
+iface = dbus.Interface(remote_object, 'org.kde.konversation')
+server = sys.argv[1]
+target = sys.argv[2]
+msg = mpris_info.getSongInfo(player)
+
+if msg:
+    msg = '/me {}'.format(msg)
+    iface.say(server, target, msg)
+
+
+#say = getattr(iface, 'say')
+#say(server, target, msg)
